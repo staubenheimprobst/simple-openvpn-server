@@ -14,7 +14,7 @@ print('<table class="table"><thead><tr><th>name</th><th>VPN IP</th><th>real IP</
 #    c = status.client_list[k]
 #    print('%s: %s (since: %s)' % (c.common_name, c.real_address, c.connected_since))
 
-for k in status.routing_table:
+for k in sorted(status.routing_table):
     c = status.routing_table[k]
     try:
         url = 'http://api.ipstack.com/' + str(c.real_address).split(':')[0] + '?access_key=da89982343c6599b8eedf0cbb7e4b9bd'
