@@ -9,10 +9,27 @@ echo "<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <title>Simple OpenVPN Server</title>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 </head>
 <body>"
 
+echo "<div class=\"container\">"
+
 echo "<h1>Simple OpenVPN Server</h1>"
+
+# **********************
+echo "<div class=\"panel panel-success\">"
+echo "<div class=\"panel-heading\">Connected Clients</div>"
+#cat /etc/openvpn/ipp.txt | sed 's@\(.*\)@<li>\1</li>@'
+#echo "</ul>"
+
+/home/mhanheide/.local/bin/openvpn-status-parse.py
+echo "</div>"
+# **********************
+
+echo "<div class=\"panel panel-danger\">"
+echo "<div class=\"panel-heading\">Management</div>"
+
 
 eval `echo "${QUERY_STRING}"|tr '&' ';'`
 
@@ -63,12 +80,14 @@ NUMBEROFCLIENTS=$(tail -n +2 /etc/openvpn/easy-rsa/pki/index.txt | grep -c "^V")
 if [[ "$NUMBEROFCLIENTS" = '0' ]]; then
 	echo "<h3>You have no existing clients.<h3>"
 else
+	echo "<ul>"
 	while read c; do
 		if [[ $(echo $c | grep -c "^V") = '1' ]]; then
 			clientName=$(echo $c | cut -d '=' -f 2)
-			echo "<p><a href='index.sh?option=revoke&client=$clientName'>Revoke</a> <a target='_blank' href='download.sh?client=$clientName'>Download</a> $clientName</p>"
+			echo "<li><a href='index.sh?option=revoke&client=$clientName'>Revoke</a> <a target='_blank' href='download.sh?client=$clientName'>Download</a> $clientName</li>"
 		fi
 	done </etc/openvpn/easy-rsa/pki/index.txt
+	echo "</ul>"
 fi
 
 echo "
@@ -78,5 +97,6 @@ New Client: <input type='text' name='client'><input type='submit' value='Add'>
 </form>
 "
 
+echo "</div></div>"
 echo "</body></html>"
 exit 0

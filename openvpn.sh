@@ -135,11 +135,11 @@ tls-auth ta.key 0
 topology subnet
 server 10.8.0.0 255.255.255.0
 ifconfig-pool-persist ipp.txt" > /etc/openvpn/server.conf
-echo 'push "redirect-gateway def1 bypass-dhcp"' >> /etc/openvpn/server.conf
+#echo 'push "redirect-gateway def1 bypass-dhcp"' >> /etc/openvpn/server.conf
 
 # DNS
-echo "push \"dhcp-option DNS $DNS1\"" >> /etc/openvpn/server.conf
-echo "push \"dhcp-option DNS $DNS2\"" >> /etc/openvpn/server.conf
+#echo "push \"dhcp-option DNS $DNS1\"" >> /etc/openvpn/server.conf
+#echo "push \"dhcp-option DNS $DNS2\"" >> /etc/openvpn/server.conf
 echo "keepalive 10 120
 cipher AES-256-CBC
 comp-lzo
@@ -149,6 +149,10 @@ persist-key
 persist-tun
 status openvpn-status.log
 verb 3
+
+;duplicate-cn
+client-to-client
+
 crl-verify crl.pem" >> /etc/openvpn/server.conf
 
 # Enable net.ipv4.ip_forward for the system
