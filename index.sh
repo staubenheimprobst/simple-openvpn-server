@@ -81,12 +81,13 @@ if [[ "$NUMBEROFCLIENTS" = '0' ]]; then
 	echo "<h3>You have no existing clients.<h3>"
 else
 	echo "<ul>"
-	while read c; do
+	sort -k5 /etc/openvpn/easy-rsa/pki/index.txt | while read c; do
 		if [[ $(echo $c | grep -c "^V") = '1' ]]; then
 			clientName=$(echo $c | cut -d '=' -f 2)
 			echo "<li><a href='index.sh?option=revoke&client=$clientName'>Revoke</a> <a target='_blank' href='download.sh?client=$clientName'>Download</a> $clientName</li>"
 		fi
-	done </etc/openvpn/easy-rsa/pki/index.txt
+	done 
+#< /etc/openvpn/easy-rsa/pki/index.txt
 	echo "</ul>"
 fi
 
