@@ -27,8 +27,8 @@ for k in status.routing_table:
         latitude = ''
         longitude = ''
         raise
-    image = 'https://maps.googleapis.com/maps/api/staticmap?center=%s,%s&size=100x100&zoom=5&maptype=roadmap&markers=color:green%%7C%s,%s' % (
-        latitude, longitude, latitude, longitude)
-    print('<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td><img src="%s"></td></tr>' % (
-        c.common_name, c.virtual_address, c.real_address, c.last_ref, city, image))
+    #image = 'https://maps.googleapis.com/maps/api/staticmap?center=%s,%s&size=100x100&zoom=5&maptype=roadmap&markers=color:green%%7C%s,%s' % (
+        #latitude, longitude, latitude, longitude)
+    print('<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td></td></tr>' % (
+        c.common_name, c.virtual_address, c.real_address, c.last_ref, city))
 print('</table>')
