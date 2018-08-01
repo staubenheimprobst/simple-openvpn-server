@@ -8,7 +8,7 @@ with open('/etc/openvpn/openvpn-status.log') as logfile:
 
 # print(status.updated_at)  # datetime.datetime(2015, 6, 18, 8, 12, 15)
 
-print('<table class="table"><thead><tr><th>name</th><th>VPN IP</th><th>real IP</th><th>last ref</th><th>location</th><th>Mb received / sent</th></thead>')
+print('<table class="table"><thead><tr><th>name</th><th>VPN IP</th><th>real IP</th><th>connected since</th><th>location</th><th>Mb received / sent</th></thead>')
 
 #for k in status.client_list:
 #   print k
@@ -31,6 +31,6 @@ for k in sorted(status.routing_table):
         raise
     #image = 'https://maps.googleapis.com/maps/api/staticmap?center=%s,%s&size=100x100&zoom=5&maptype=roadmap&markers=color:green%%7C%s,%s' % (
         #latitude, longitude, latitude, longitude)
-    print('<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>% 6.3f / % 6.3f</td></tr>' % (
-        c.common_name, c.virtual_address, c.real_address, c.last_ref, city, cl.bytes_received / (1024.0 * 1024.0), cl.bytes_sent/ (1024.0 * 1024.0)))
+    print('<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%.3f / %.3f</td></tr>' % (
+        c.common_name, c.virtual_address, c.real_address, cl.connected_since, city, cl.bytes_received / (1024.0 * 1024.0), cl.bytes_sent/ (1024.0 * 1024.0)))
 print('</table>')
