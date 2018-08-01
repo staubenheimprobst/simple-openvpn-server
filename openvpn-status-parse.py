@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 from openvpn_status import parse_status
 from pprint import pprint
-
+from requests import get
+from json import loads
 with open('/etc/openvpn/openvpn-status.log') as logfile:
     status = parse_status(logfile.read())
 
 # print(status.updated_at)  # datetime.datetime(2015, 6, 18, 8, 12, 15)
 
-print('<table class="table"><thead><tr><th>name</th><th>VPN IP</th><th>real IP</th><th>last ref</th></th></thead>')
+print('<table class="table"><thead><tr><th>name</th><th>VPN IP</th><th>real IP</th><th>last ref</th><th>location</th><th/></thead>')
 
 # for k in status.client_list:
 #    c = status.client_list[k]
@@ -15,6 +16,19 @@ print('<table class="table"><thead><tr><th>name</th><th>VPN IP</th><th>real IP</
 
 for k in status.routing_table:
     c = status.routing_table[k]
-    print('<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>' % (
-        c.common_name, c.virtual_address, c.real_address, c.last_ref))
+    try:
+        url = 'http://api.ipstack.com/' + str(c.real_address).split(':')[0] + '?access_key=da89982343c6599b8eedf0cbb7e4b9bd'
+        geoip = get(url).json()
+        city = geoip['city']
+        latitude = geoip['latitude']
+        longitude = geoip['longitude']
+    except:
+        city = ''
+        latitude = ''
+        longitude = ''
+        raise
+    image = 'https://maps.googleapis.com/maps/api/staticmap?center=%s,%s&size=100x100&zoom=5&maptype=roadmap&markers=color:green%%7C%s,%s' % (
+        latitude, longitude, latitude, longitude)
+    print('<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td><img src="%s"></td></tr>' % (
+        c.common_name, c.virtual_address, c.real_address, c.last_ref, city, image))
 print('</table>')
