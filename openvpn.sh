@@ -48,10 +48,10 @@ if [[ "$EUID" -ne 0 ]]; then
 	exit 2
 fi
 
-if [[ ! -e /dev/net/tun ]]; then
-	echo "The TUN device is not available. You need to enable TUN before running this script."
-	exit 3
-fi
+#if [[ ! -e /dev/net/tun ]]; then
+#	echo "The TUN device is not available. You need to enable TUN before running this script."
+#	exit 3
+#fi
 
 if grep -qs "CentOS release 5" "/etc/redhat-release"; then
 	echo "CentOS 5 is too old and not supported"
