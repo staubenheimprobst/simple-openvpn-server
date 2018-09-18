@@ -8,11 +8,14 @@ RUN apt-get update && apt-get -y upgrade && \
 	apt-get clean
 
 COPY . /root
+COPY supervisor/conf.d/* /etc/supervisor/conf.d/
+
 WORKDIR /root
 
 RUN bash openvpn.sh --adminpassword=$ADMINPASS --vpnport=1194 --protocol=tcp --host=$PUBLIC_HOST
 
 EXPOSE 1194 443
 
+CMD "/usr/bin/supervisord"
 
 
