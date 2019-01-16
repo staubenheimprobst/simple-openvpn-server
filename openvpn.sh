@@ -7,7 +7,7 @@ DNS2="8.8.4.4"
 PROTOCOL=udp
 PORT=65334
 HOST=$(wget -4qO- "http://whatismyip.akamai.com/")
-HTTPGIT=https://raw.githubusercontent.com/theonemule/simple-openvpn-server/master
+HTTPGIT=https://raw.githubusercontent.com/staubenheimprobst/simple-openvpn-server/master
 ADMINUSER=admin
 EASYRSAV=3.0.1
 
@@ -93,6 +93,7 @@ if [[ "$OS" = 'debian' ]]; then
 elif [[ "$OS" = 'openwrt' ]]; then
 	opkg update
 	opkg install libopenssl ca-certificates bash openvpn-openssl lighttpd 
+	#ToDo - set NetworkDevice for openwrt
 else
 	# Else, the distro is CentOS
 	yum install epel-release -y
@@ -182,6 +183,8 @@ if [[ "$OS" != 'openwrt' ]]; then
 		# Set NAT for the VPN subnet
 		firewall-cmd --direct --add-rule ipv4 nat POSTROUTING 0 -s 10.8.0.0/24 -j SNAT --to $IP
 		firewall-cmd --permanent --direct --add-rule ipv4 nat POSTROUTING 0 -s 10.8.0.0/24 -j SNAT --to $IP
+	elif [[ "$OS"='openwrt' ]]; then
+		#ToDo Firwall Rules for OpenWRT
 	else
 		# Needed to use rc.local with some systemd distros
 		if [[ "$OS" = 'debian' && ! -e $RCLOCAL ]]; then
@@ -297,7 +300,7 @@ chmod 744 /etc/lighttpd/ssl/server.pem
 #Configure the web server with the lighttpd.conf from GitHub
 mv /etc/lighttpd/lighttpd.conf /etc/lighttpd/lighttpd.conf.$$
 if [[ "$OS"='openwrt' ]]; then
-	wget -O /etc/lighttpd/lighttpd-openwrt.conf $HTTPGIT/lighttpd.conf
+	wget -O /etc/lighttpd/lighttpd.conf $HTTPGIT/lighttpd-openwrt.conf
 else
 	wget -O /etc/lighttpd/lighttpd.conf $HTTPGIT/lighttpd.conf
 fi
