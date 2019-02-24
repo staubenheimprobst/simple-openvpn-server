@@ -93,7 +93,11 @@ if [[ "$OS" = 'debian' ]]; then
 elif [[ "$OS" = 'openwrt' ]]; then
 	opkg update
 	opkg install libopenssl ca-certificates bash openvpn-openssl lighttpd 
-	#ToDo - set NetworkDevice for openwrt
+	uci set network.vpn="interface"
+	uci set network.vpn.ifname="tun0"
+	uci set network.vpn.proto="none"
+	uci commit network
+	service network reload
 else
 	# Else, the distro is CentOS
 	yum install epel-release -y
@@ -184,7 +188,15 @@ if [[ "$OS" != 'openwrt' ]]; then
 		firewall-cmd --direct --add-rule ipv4 nat POSTROUTING 0 -s 10.8.0.0/24 -j SNAT --to $IP
 		firewall-cmd --permanent --direct --add-rule ipv4 nat POSTROUTING 0 -s 10.8.0.0/24 -j SNAT --to $IP
 	elif [[ "$OS"='openwrt' ]]; then
-		#ToDo Firwall Rules for OpenWRT
+		uci add_list firewall.@zone[0].network="vpn"
+		uci add firewall rule
+		uci set firewall.@rule[-1].name="Allow-OpenVPN"
+		uci set firewall.@rule[-1].src="wan"
+		uci set firewall.@rule[-1].dest_port="$PORT"
+		uci set firewall.@rule[-1].proto="udp"
+		uci set firewall.@rule[-1].target="ACCEPT"
+		uci commit firewall
+		service firewall restart
 	else
 		# Needed to use rc.local with some systemd distros
 		if [[ "$OS" = 'debian' && ! -e $RCLOCAL ]]; then
