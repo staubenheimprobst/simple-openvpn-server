@@ -99,7 +99,7 @@ elif [[ "$OS" = 'openwrt' ]]; then
 	uci set network.vpn.proto="none"
 	uci commit network
 	service network reload
-	opkg install openvpn-openssl openssl-util
+	opkg install openvpn-openssl openssl-util lighttpd-mod-access lighttpd-mod-alias lighttpd-mod-compress lighttpd-mod-redirect lighttpd-mod-cgi lighttpd-mod-auth lighttpd-mod-authn_file
 else
 	# Else, the distro is CentOS
 	yum install epel-release -y
