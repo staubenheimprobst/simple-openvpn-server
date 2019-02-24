@@ -190,14 +190,29 @@ if [[ "$OS" != 'openwrt' ]]; then
 		firewall-cmd --direct --add-rule ipv4 nat POSTROUTING 0 -s 10.8.0.0/24 -j SNAT --to $IP
 		firewall-cmd --permanent --direct --add-rule ipv4 nat POSTROUTING 0 -s 10.8.0.0/24 -j SNAT --to $IP
 	elif [[ "$OS"='openwrt' ]]; then
-		uci add_list firewall.@zone[0].network="vpn"
-		uci add firewall rule
-		uci set firewall.@rule[-1].name="Allow-OpenVPN"
-		uci set firewall.@rule[-1].src="wan"
-		uci set firewall.@rule[-1].dest_port="$PORT"
-		uci set firewall.@rule[-1].proto="udp"
-		uci set firewall.@rule[-1].target="ACCEPT"
-		uci commit firewall
+		echo "config zone
+		option input ACCEPT
+		option output ACCEPT
+		option name vpn
+		option forward ACCEPT
+		option network vpn
+
+		config forwarding
+		option dest lan
+		option src vpn
+
+		config forwarding
+		option dest vpn
+		option src lan
+
+		config rule
+		option enabled 1
+		option target ACCEPT
+		option src wan
+		option proto udp
+		option dest_port $Port 
+		option name Allow-openvpn" >> /etc/config/firewall
+
 		service firewall restart
 	else
 		# Needed to use rc.local with some systemd distros
@@ -243,10 +258,10 @@ if [[ "$OS" = 'debian' ]]; then
 	if pgrep systemd-journal; then
 		systemctl restart openvpn@server.service
 	else
-		/etc/init.d/openvpn restart
+		service openvpn restart
 	fi
 elif [[ "$OS" = 'openwrt' ]]; then
-	/etc/init.d/openvpn restart
+	service openvpn restart
 else
 	if pgrep systemd-journal; then
 		systemctl restart openvpn@server.service
@@ -301,7 +316,7 @@ chmod g+s /etc/openvpn/easy-rsa/
 #Set Port 443 on 8443for uhttpd openwrt
 if [[ "$OS" = 'openwrt' ]]; then
 	sed -i 's/:443/:8443/' /etc/config/uhttpd
-	/etc/init.d/uhttpd restart
+	service uhttpd restart
 fi
 
 #Generate a self-signed certificate for the web server
@@ -324,11 +339,12 @@ if [[ "$OS"='openwrt' ]]; then
 	mkdir /www2
 	wget -O /www2/index.sh $HTTPGIT/index.sh
 	wget -O /www2/download.sh $HTTPGIT/download.sh
+	wget -O /www2/admin.sh $HTTPGIT/admin.sh
 	chown -R http:nogroup /www2
 else
 	rm /var/www/html/*
 	wget -O /var/www/html/index.sh $HTTPGIT/index.sh
-
+	wget -O /var/www/html/admin.sh $HTTPGIT/admin.sh
 	wget -O /var/www/html/download.sh $HTTPGIT/download.sh
 	chown -R www-data:www-data /var/www/html/
 fi
@@ -337,8 +353,4 @@ fi
 echo "$ADMINUSER:$ADMINPASSWORD" >> /etc/lighttpd/.lighttpdpassword
 
 #restart the web server
-if [[ "$OS" = 'openwrt' ]]; then
-	/etc/init.d/lighttpd restart
-else
-	service lighttpd restart
-fi
+service lighttpd restart
