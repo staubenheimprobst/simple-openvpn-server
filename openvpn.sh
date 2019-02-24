@@ -144,6 +144,7 @@ proto $PROTOCOL
 dev tun
 sndbuf 0
 rcvbuf 0
+comp-lzo
 ca ca.crt
 cert server.crt
 key server.key
