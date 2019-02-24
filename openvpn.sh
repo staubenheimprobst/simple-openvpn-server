@@ -53,6 +53,7 @@ fi
 
 if [[ ! -e /dev/net/tun ]]; then
 	echo "The TUN device is not available. You need to enable TUN before running this script."
+	echo "For openwrt install kmod-tun!"
 	exit 3
 fi
 
@@ -98,6 +99,7 @@ elif [[ "$OS" = 'openwrt' ]]; then
 	uci set network.vpn.proto="none"
 	uci commit network
 	service network reload
+	opkg install openvpn-openssl openssl-util
 else
 	# Else, the distro is CentOS
 	yum install epel-release -y
