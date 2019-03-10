@@ -339,11 +339,13 @@ fi
 if [[ "$OS"='openwrt' ]]; then
 	mkdir /www2
 	mkdir /www2/css
+	mkdir /www2/images
 	wget -O /www2/index.sh $HTTPGIT/index.sh
 	wget -O /www2/download.sh $HTTPGIT/download.sh
 	wget -O /www2/admin.sh $HTTPGIT/admin.sh
 	wget -O /www2/head_tmp $HTTPGIT/head_tmp
         wget -O /www2/css/bootstrap.min.css $HTTPGIT/css/bootstrap.min.css
+        wget -O /www2/images/favicon.png $HTTPGIT/images/favicon.png
 	chown -R http:nogroup /www2
 else
 	rm /var/www/html/*
@@ -353,7 +355,7 @@ else
 	wget -O /var/www/html/download.sh $HTTPGIT/download.sh
 	wget -O /var/www/html/head_tmp  $HTTPGIT/head_tmp
         wget -O /var/www/html/css/bootstrap.min.css $HTTPGIT/css/bootstrap.min.css
-	chown -R http:nogroup /www2
+        wget -O /var/www/html/images/favicon.png $HTTPGIT/images/favicon.png
 	chown -R www-data:www-data /var/www/html/
 fi
 
