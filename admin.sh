@@ -1,34 +1,22 @@
 #!/bin/bash
 
 #The admin interface for OpenVPN
+cat head_tmp
 
-echo "Content-type: text/html"
-echo ""
-echo "<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>Simple OpenVPN Server</title>
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-</head>
-<body>"
-
-echo "<div class=\"container\">"
-
-echo "<h1>Simple OpenVPN Server</h1>"
+echo "<body>
+<div class=\"container\">
+<h1>Simple OpenVPN Server</h1>"
 
 # **********************
-#echo "<div class=\"panel panel-success\">"
-#echo "<div class=\"panel-heading\">Connected Clients</div>"
-#cat /etc/openvpn/ipp.txt | sed 's@\(.*\)@<li>\1</li>@'
-#echo "</ul>"
-
-#/home/mhanheide/.local/bin/openvpn-status-parse.py
-#echo "</div>"
+echo "<div class=\"panel panel-success\">
+<div class=\"panel-heading\">Connected Clients</div>
+<ul>"
+cat /etc/openvpn/ipp.txt | sed 's@\(.*\)@<li>\1</li>@'
+echo "</ul></div>"
 # **********************
 
-echo "<div class=\"panel panel-danger\">"
-echo "<div class=\"panel-heading\">Management</div>"
+echo "<div class=\"panel panel-danger\">
+<div class=\"panel-heading\">Management</div>"
 
 
 eval `echo "${QUERY_STRING}"|tr '&' ';'`
@@ -72,7 +60,7 @@ case $option in
 		rm -rf /etc/openvpn/crl.pem
 		cp /etc/openvpn/easy-rsa/pki/crl.pem /etc/openvpn/crl.pem
 		# CRL is read with each client connection, when OpenVPN is dropped to nobody
-		echo "<h3>Certificate for client <span style='color:red'>$client</span> revoked.</h3>"
+		echo "<h3>Certificate for client <span style=color:red>$client</span> revoked.</h3>"
 	;;
 esac
 
@@ -85,20 +73,15 @@ else
 		if [[ $(echo $c | grep -c "^V") = '1' ]]; then
 			clientName=$(echo $c | cut -d '=' -f 2)
 			client_ip=`grep "^$clientName," /etc/openvpn/ipp.txt | cut -f2 -d","`
-			echo "<li><a href='admin.sh?option=revoke&client=$clientName'>Revoke</a> <a target='_blank' href='download.sh?client=$clientName'>Download</a> $clientName ($client_ip)</li>"
+			echo " <li><a href=admin.sh?option=revoke&client=$clientName>Revoke</a> <a target=_blank href=\"download.sh?client=$clientName\">Download</a> $clientName ($client_ip)</li>"
 		fi
 	done 
-#< /etc/openvpn/easy-rsa/pki/index.txt
 	echo "</ul>"
 fi
 
-echo "
-<form action='admin.sh' method='get'>
-<input type='hidden' name='option' value='add'>
-New Client: <input type='text' name='client'><input type='submit' value='Add'>
-</form>
-"
+echo "<form action='admin.sh' method='get'><input type='hidden' name='option' value='add'>New Client: <input type=text name=client><input type='submit' value='Add'></form>
+</div></div>
+  </body>
+</html>"
 
-echo "</div></div>"
-echo "</body></html>"
 exit 0

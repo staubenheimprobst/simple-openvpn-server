@@ -338,15 +338,22 @@ fi
 #install the webserver scripts
 if [[ "$OS"='openwrt' ]]; then
 	mkdir /www2
+	mkdir /www2/css
 	wget -O /www2/index.sh $HTTPGIT/index.sh
 	wget -O /www2/download.sh $HTTPGIT/download.sh
 	wget -O /www2/admin.sh $HTTPGIT/admin.sh
+	wget -O /www2/head_tmp $HTTPGIT/head_tmp
+        wget -O /www2/css/bootstrap.min.css $HTTPGIT/css/bootstrap.min.css
 	chown -R http:nogroup /www2
 else
 	rm /var/www/html/*
+	mkdir /var/www/html/css
 	wget -O /var/www/html/index.sh $HTTPGIT/index.sh
 	wget -O /var/www/html/admin.sh $HTTPGIT/admin.sh
 	wget -O /var/www/html/download.sh $HTTPGIT/download.sh
+	wget -O /var/www/html/head_tmp  $HTTPGIT/head_tmp
+        wget -O /var/www/html/css/bootstrap.min.css $HTTPGIT/css/bootstrap.min.css
+	chown -R http:nogroup /www2
 	chown -R www-data:www-data /var/www/html/
 fi
 
