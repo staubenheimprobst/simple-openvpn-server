@@ -21,7 +21,7 @@ echo "</div>
   <div class=\"panel panel-success\">
   <div class=\"panel-heading\">Admin</div>
   <div class=\"shadow-none p-3 mb-5 bg-light rounded\">
-    <a target=\"_blank\" class=\"btn btn-danger\" data-toggle=\"collapse\" role=\"button\" aria-expanded=\"false\" aria-controls=\"collapseExample\" href=\"/admin.sh\">Admin Interface</a>
+    <a target=\"_blank\" class=\"btn btn-danger\" data-toggle=\"collapse\" role=\"button\" aria-expanded=\"false\" aria-controls=\"collapseExample\" href=\"/admin/admin.sh\">Admin Interface</a>
   </div></div></div>
   </body>
 </html>"

@@ -30,25 +30,26 @@ Otherwise, use the installer:
 1. Download the installer script.
 
 	````
-	wget https://raw.githubusercontent.com/staubenheimprobst/simple-openvpn-server/master/openvpn.sh
+	wget https://raw.githubusercontent.com/staubenheimprobst/simple-openvpn-server/master/install.sh
 	````
 
 1. Make the script executable
 
 	````
-	chmod +x openvpn.sh
+	chmod +x install.sh
 	````
 
 1. Run the script.
 
 	````
-	./openvpn.sh [options]
+	./install.sh [options]
 	````
 
 	Example:
 
 	````
-	./openvpn.sh --adminpassword=mypassword --host=myvpn.example.com
+	./install.sh --adminpassword=mypassword --host=myvpn.example.com
+	rm install.sh
 	````
 
 
@@ -83,7 +84,7 @@ Otherwise, use the installer:
 
 	![Add a client](images/add-client.png)
 
-1. Once added, you can click **Revoke** to revoke access or **Download** to download the client profile. 
+1. Once added, you can click **Revoke** to revoke access, **Download** to download the client profile or **ClientConfig** to edit the ClientConfigfile. 
 
 	![Revoke or Download](images/download-revoke.png)
 
