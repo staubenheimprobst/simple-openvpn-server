@@ -342,21 +342,33 @@ if [[ "$OS"='openwrt' ]]; then
 	mkdir /www2/images
 	wget -O /www2/index.sh $HTTPGIT/index.sh
 	wget -O /www2/download.sh $HTTPGIT/download.sh
+	wget -O /www2/config.sh $HTTPGIT/config.sh
+	wget -O /www2/VARS.sh $HTTPGIT/VARS.sh
+	wget -O /www2/LOAD.sh $HTTPGIT/LOAD.sh
 	wget -O /www2/admin.sh $HTTPGIT/admin.sh
 	wget -O /www2/head_tmp $HTTPGIT/head_tmp
         wget -O /www2/css/bootstrap.min.css $HTTPGIT/css/bootstrap.min.css
         wget -O /www2/images/favicon.png $HTTPGIT/images/favicon.png
 	chown -R http:nogroup /www2
+	chown -R http:nogroup /etc/openvpn/ccd
+	chown -R http:nogroup /etc/openvpn/client-common.txt
+	chown -R http:nogroup /etc/openvpn/server.conf
 else
 	rm /var/www/html/*
 	mkdir /var/www/html/css
 	wget -O /var/www/html/index.sh $HTTPGIT/index.sh
 	wget -O /var/www/html/admin.sh $HTTPGIT/admin.sh
 	wget -O /var/www/html/download.sh $HTTPGIT/download.sh
+	wget -O /var/www/html/config.sh $HTTPGIT/config.sh
+	wget -O /var/www/html/VARS.sh $HTTPGIT/VARS.sh
+	wget -O /var/www/html/LOAD.sh $HTTPGIT/LOAD.sh
 	wget -O /var/www/html/head_tmp  $HTTPGIT/head_tmp
         wget -O /var/www/html/css/bootstrap.min.css $HTTPGIT/css/bootstrap.min.css
         wget -O /var/www/html/images/favicon.png $HTTPGIT/images/favicon.png
 	chown -R www-data:www-data /var/www/html/
+	chown -R www-data:www-data /etc/openvpn/ccd
+	chown -R www-data:www-data /etc/openvpn/client-common.txt
+	chown -R www-data:www-data /etc/openvpn/server.conf
 fi
 
 #set the password file for the WWW logon

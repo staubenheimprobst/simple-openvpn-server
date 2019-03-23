@@ -9,10 +9,9 @@ echo "<body>
 
 # **********************
 echo "<div class=\"panel panel-success\">
-<div class=\"panel-heading\">Connected Clients</div>
-<ul>"
-cat /etc/openvpn/ipp.txt | sed 's@\(.*\)@<li>\1</li>@'
-echo "</ul></div>"
+<div class=\"panel-heading\">Connected Clients</div>"
+cat /etc/openvpn/ipp.txt | sed 's@\(.*\)@<div class="shadow-sm p-3 mb-5 bg-white rounded">\1</div>@'
+echo "</div>"
 # **********************
 
 echo "<div class=\"panel panel-danger\">
@@ -68,20 +67,29 @@ NUMBEROFCLIENTS=$(tail -n +2 /etc/openvpn/easy-rsa/pki/index.txt | grep -c "^V")
 if [[ "$NUMBEROFCLIENTS" = '0' ]]; then
 	echo "<h3>You have no existing clients.<h3>"
 else
-	echo "<ul>"
+	echo "<div class=\"panel-default\">"
 	sort -k5 /etc/openvpn/easy-rsa/pki/index.txt | while read c; do
 		if [[ $(echo $c | grep -c "^V") = '1' ]]; then
 			clientName=$(echo $c | cut -d '=' -f 2)
 			client_ip=`grep "^$clientName," /etc/openvpn/ipp.txt | cut -f2 -d","`
-			echo " <li><a href=admin.sh?option=revoke&client=$clientName>Revoke</a> <a target=_blank href=\"download.sh?client=$clientName\">Download</a> $clientName ($client_ip)</li>"
+			if [[ $clientName != "server" ]]; then
+				echo "<div class=\"shadow p-3 mb-5 bg-white rounded\">
+				<a target=\"_blank\" class=\"btn btn-danger\" data-toggle=\"collapse\" role=\"button\" aria-expanded=\"false\" aria-controls=\"collapseExample\" href=\"admin.sh?option=revoke&client=$clientName\">Revoke</a>
+				<a target=\"_blank\" class=\"btn btn-primary\" data-toggle=\"collapse\" role=\"button\" aria-expanded=\"false\" aria-controls=\"collapseExample\"  href=\"download.sh?client=$clientName\">Download</a> 
+				<a target=\"_self\" class=\"btn btn-warning\" data-toggle=\"collapse\" role=\"button\" aria-expanded=\"false\" aria-controls=\"collapseExample\" href=\"config.sh?client=$clientName\">ClientConfig</a> 
+				$clientName ($client_ip)
+				</div>"
+			fi
 		fi
 	done 
-	echo "</ul>"
+	echo "</div>"
 fi
 
-echo "<form action='admin.sh' method='get'><input type='hidden' name='option' value='add'>New Client: <input type=text name=client><input type='submit' value='Add'></form>
-</div></div>
-  </body>
+echo "<div class=\"row mx-md-n20\"><div class=\"col-md-12\">
+<div class=\"col px-md-5\"><div class=\"p-3 border bg-light\">
+<form action='admin.sh' method='get'><input type='hidden' name='option' value='add'>New Client: <input type=text name=client><input type='submit' value='Add'></form></p>
+</div></div></div></div>
+</body>
 </html>"
 
 exit 0
