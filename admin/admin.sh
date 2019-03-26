@@ -10,7 +10,7 @@ echo "<body>
 # **********************
 echo "<div class=\"panel panel-success\">
 <div class=\"panel-heading\">Connected Clients</div>"
-cat /etc/openvpn/ipp.txt | sed 's@\(.*\)@<div class="shadow-sm p-3 mb-5 bg-white rounded">\1</div>@'
+cat /etc/openvpn/ipp.txt | sed 's@\(.*\)@<div class="bg-white rounded">\1</div>@'
 echo "</div>"
 # **********************
 

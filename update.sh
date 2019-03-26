@@ -1,5 +1,7 @@
 #!/bin/bash
 
+HTTPGIT=https://raw.githubusercontent.com/staubenheimprobst/simple-openvpn-server/master
+
 #The admin interface for OpenVPN
 cat head_tmp
 
@@ -12,6 +14,13 @@ if [[ "$OS"='openwrt' ]]; then
 else
 	mkdir 
 fi
+}
+
+function check_dir {
+        if [[ ! -d $1 ]]; then
+                mkdir $1 
+                chown -R $2:$3 $1 #$1 == dir $2 == user $3 ==  group 
+        fi
 }
 
 if [[ -e /etc/debian_version ]]; then
@@ -43,6 +52,9 @@ if [[ "$OS"='openwrt' ]]; then
         #mkdir /www2
         #mkdir /www2/css
         #mkdir /www2/images
+	check_dir /www2/admin http nogroup
+	check_dir /www2/css http nogroup
+	check_dir /www2/images http nogroup
         wget -O /www2/index.sh $HTTPGIT/index.sh
         wget -O /www2/admin/download.sh $HTTPGIT/download.sh
         wget -O /www2/admin/config.sh $HTTPGIT/config.sh
