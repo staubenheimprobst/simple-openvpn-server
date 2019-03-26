@@ -1,26 +1,27 @@
 #!/bin/bash
 
 HTTPGIT=https://raw.githubusercontent.com/staubenheimprobst/simple-openvpn-server/master
-
+FILESTOUPDATE="index.sh head_tmp admin/download.sh admin/config.sh admin/admin.sh admin/VAR.sh admin/LOAD.sh css/bootstrap.min.css images/favicon.png"
 #The admin interface for OpenVPN
-cat head_tmp
-
-echo "  </body>
-</html>"
-
-function loadfile {
-if [[ "$OS"='openwrt' ]]; then
-	mkdir 
-else
-	mkdir 
-fi
-}
+#cat head_tmp
+#
+#echo "  </body>
+#</html>"
 
 function check_dir {
         if [[ ! -d $1 ]]; then
                 mkdir $1 
                 chown -R $2:$3 $1 #$1 == dir $2 == user $3 ==  group 
         fi
+}
+
+function update_file {
+	for i in $FILESTOUPDATE
+	do
+		wget -O $1/$i $HTTPGIT/$i
+		chown $2:$3 $1/$i
+	done
+
 }
 
 if [[ -e /etc/debian_version ]]; then
@@ -47,39 +48,10 @@ else
 fi
 
 
-#udate the webserver scripts
-if [[ "$OS"='openwrt' ]]; then
-        #mkdir /www2
-        #mkdir /www2/css
-        #mkdir /www2/images
-	check_dir /www2/admin http nogroup
-	check_dir /www2/css http nogroup
-	check_dir /www2/images http nogroup
-        wget -O /www2/index.sh $HTTPGIT/index.sh
-        wget -O /www2/admin/download.sh $HTTPGIT/download.sh
-        wget -O /www2/admin/config.sh $HTTPGIT/config.sh
-        wget -O /www2/admin/VARS.sh $HTTPGIT/VARS.sh
-        wget -O /www2/admin/LOAD.sh $HTTPGIT/LOAD.sh
-        wget -O /www2/admin/admin.sh $HTTPGIT/admin.sh
-        wget -O /www2/head_tmp $HTTPGIT/head_tmp
-        wget -O /www2/css/bootstrap.min.css $HTTPGIT/css/bootstrap.min.css
-        wget -O /www2/images/favicon.png $HTTPGIT/images/favicon.png
-        #chown -R http:nogroup /www2
-        #chown -R http:nogroup /etc/openvpn/ccd
-else
-        #rm /var/www/html/*
-        #mkdir /var/www/html/css
-        wget -O /var/www/html/index.sh $HTTPGIT/index.sh
-        wget -O /var/www/html/admin/admin.sh $HTTPGIT/admin.sh
-        wget -O /var/www/html/admin/download.sh $HTTPGIT/download.sh
-        wget -O /var/www/html/admin/config.sh $HTTPGIT/config.sh
-        wget -O /var/www/html/admin/VARS.sh $HTTPGIT/VARS.sh
-        wget -O /var/www/html/admin/LOAD.sh $HTTPGIT/LOAD.sh
-        wget -O /var/www/html/head_tmp  $HTTPGIT/head_tmp
-        wget -O /var/www/html/css/bootstrap.min.css $HTTPGIT/css/bootstrap.min.css
-        wget -O /var/www/html/images/favicon.png $HTTPGIT/images/favicon.png
-        #chown -R www-data:www-data /var/www/html/
-        #chown -R www-data:www-data /etc/openvpn/ccd
-fi
+#update the webserver scripts
+check_dir $WEBPATH/admin $HTTPUSER $GROUPNAME 
+check_dir $WEBPATH/css $HTTPUSER $GROUPNAME 
+check_dir $WEBPATH/images $HTTPUSER $GROUPNAME 
+update_file $WEBPATH $HTTPUSER $GROUPNAME 
 
 exit 0
