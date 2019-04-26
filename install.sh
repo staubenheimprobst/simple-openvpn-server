@@ -182,6 +182,10 @@ chown $USERNAME:$GROUPNAME /etc/openvpn/crl.pem
 # Generate key for tls-auth
 openvpn --genkey --secret /etc/openvpn/ta.key
 
+# create ccd dir for ClientConfigFile
+#[[ ! -d /etc/openvpn/ccd ]] && mkdir /etc/openvpn/ccd
+#chown $USERNAME:$GROUPNAME /etc/openvpn/ccd
+
 # Generate server.conf
 echo "port $PORT
 proto $PROTOCOL
@@ -347,17 +351,16 @@ verb 3" > /etc/openvpn/client-common.txt
 mv /etc/openvpn/clients/ /etc/openvpn/clients.$$/
 mkdir /etc/openvpn/clients/
 
-#Setup the web server to use an self signed cert
-# mkdir /etc/openvpn/clients/
-
 #Set permissions for easy-rsa and open vpn to be modified by the web user.
 if [[ "$OS"='openwrt' ]]; then
-	chown -R http:nogroup /etc/openvpn/easy-rsa
-	chown -R http:nogroup /etc/openvpn/clients/
+	[[ ! -d /etc/openvpn/ccd ]] && mkdir /etc/openvpn/ccd
 else
 	chown -R www-data:www-data /etc/openvpn/easy-rsa
 	chown -R www-data:www-data /etc/openvpn/clients/
+	[[ ! -d /etc/openvpn/ccd ]] && mkdir /etc/openvpn/ccd
+	chown -R www-data:www-data /etc/openvpn/ccd7
 fi
+
 chmod -R 755 /etc/openvpn/
 chmod -R 777 /etc/openvpn/crl.pem
 chmod g+s /etc/openvpn/clients/
@@ -389,6 +392,8 @@ webroot
 
 #set the password file for the WWW logon
 echo "$ADMINUSER:$ADMINPASSWORD" >> /etc/lighttpd/.lighttpdpassword
+
+[[ "admin" -eq $ADMINUSER ]] || sed -i "s/user=admin/user=$ADMINUSER/" /etc/lighttpd/lighttpd.conf && echo && echo "Default admin user corrected from admin to $ADMINUSER in the AuthSection from lighttpd." &&  echo 
 
 #restart the web server
 [[ "$OS"='openwrt' ]] || service lighttpd restart

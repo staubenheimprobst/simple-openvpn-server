@@ -26,6 +26,8 @@ case $edit in
 		Config=$(loadf $OVPNPATH/server.conf)
 	;;
 	"Client") #LoadConfig Client
+		[[ ! -d $OVPNPATH/ccd ]] && mkdir $OVPNPATH/ccd
+		[[ ! -e $OVPNPATH/ccd/$client ]] && touch $OVPNPATH/ccd/$client
 		Config=$(loadf $OVPNPATH/ccd/$client)
 	;;
 	*)
