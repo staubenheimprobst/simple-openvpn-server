@@ -11,12 +11,25 @@ HTTPGIT=https://raw.githubusercontent.com/staubenheimprobst/simple-openvpn-serve
 ADMINUSER=admin
 EASYRSAV=3.0.1
 
+function help {
+	echo "--adminuser=admin - set your admin user for login (default admin)"
+	echo "--adminpassword=secret - set your admin password (default secret / is not recommend)"
+	echo "--dns1=8.8.8.8 - set your first dns server (default 8.8.8.8)"
+	echo "--dns2=8.8.4.4 - set your second dns server (default 8.8.4.4)"
+	echo "--protocol=tcp - set the protocol (default udp)"
+	echo "--host=your server ip - set the ip or dnsrecord from your openvpn server (use the external ip oder dnsrecord)"
+	echo "--port=1194 - set the port of your openvpn server (default 1194)"
+}
+
 
 for i in "$@"
 do
 	case $i in
 		--adminpassword=*)
 		ADMINPASSWORD="${i#*=}"
+		;;
+		--adminuser=*)
+		ADMINUSER="${i#*=}"
 		;;
 		--dns1=*)
 		DNS1="${i#*=}"
@@ -33,12 +46,15 @@ do
 		--host=*)
 		HOST="${i#*=}"
 		;;
+		--help)
+			help
+		;;
 		*)
 		;;
 	esac
 done
 
-[ "${ADMINPASSWORD}" == "secret" ] && echo "fatal: password is not set" && exit 1
+[ "${ADMINPASSWORD}" == "secret" ] && help && echo "fatal: password is not set" && exit 1
 
 # Detect Debian users running the script with "sh" instead of bash
 if readlink /proc/$$/exe | grep -qs "dash"; then
@@ -64,20 +80,48 @@ fi
 
 if [[ -e /etc/debian_version ]]; then
 	OS=debian
+	USERNAME=nobody
 	GROUPNAME=nogroup
 	RCLOCAL='/etc/rc.local'
 elif [[ -e /etc/device_info ]]; then
 	OS=openwrt
-	GROUPNAME=nogroup
+	USERNAME=root
+	GROUPNAME=root
 	RCLOCAL='/etc/rc.local'
+	WEBROOT='/www2'
 elif [[ -e /etc/centos-release || -e /etc/redhat-release ]]; then
 	OS=centos
+	USERNAME=nobody
 	GROUPNAME=nobody
 	RCLOCAL='/etc/rc.d/rc.local'
 else
 	echo "Looks like you aren't running this installer on Debian, openwrt,  Ubuntu or CentOS"
 	exit 5
 fi
+
+function webroot {
+	#create webrooot
+	for i in $WEBROOT $WEBROOT/css $WEBROOT/images $WEBROOT/admin
+	do
+		[[ ! -d $i ]] && mkdir $i
+	done
+
+	#Download webservicesite
+	for i in in index.sh head_tmp admin/download.sh admin/config.sh admin/admin.sh admin/VAR.sh admin/LOAD.sh css/bootstrap.min.css images/favicon.png 
+	do
+		wget -O $WEBROOT/$i $HTTPGIT/$i
+	done
+
+	#Setting access rights for webserver
+	if [[ "root" -ne "$USERNAME" ]]; then
+		USERNAME=www-data
+		GROUPNAME=www-data
+		for i in $WEBROOT /etc/openvpn/ccd /etc/openvpn/client-common.txt /etc/openvpn/server.conf
+		do	
+			chown -R $USERNAME:$GROUPNAME $OPATH 
+		done
+	fi
+} 
 
 # Try to get our IP from the system and fallback to the Internet.
 
@@ -98,7 +142,7 @@ elif [[ "$OS" = 'openwrt' ]]; then
 	uci set network.vpn.ifname="tun0"
 	uci set network.vpn.proto="none"
 	uci commit network
-	service network reload
+	/etc/init.d/network reload
 	opkg install openvpn-openssl openssl-util lighttpd-mod-access lighttpd-mod-alias lighttpd-mod-compress lighttpd-mod-redirect lighttpd-mod-cgi lighttpd-mod-auth lighttpd-mod-authn_file
 else
 	# Else, the distro is CentOS
@@ -114,11 +158,11 @@ fi
 
 wget -O ~/EasyRSA-$EASYRSAV.tgz "https://github.com/OpenVPN/easy-rsa/releases/download/$EASYRSAV/EasyRSA-$EASYRSAV.tgz"
 tar xzf ~/EasyRSA-$EASYRSAV.tgz -C ~/
-mv ~/EasyRSA-$EASYRSAV/ /etc/openvpn/
-mv /etc/openvpn/EasyRSA-$EASYRSAV/ /etc/openvpn/easy-rsa/
-chown -R root:root /etc/openvpn/easy-rsa/
+mv ~/EasyRSA-$EASYRSAV /etc/openvpn/
+mv /etc/openvpn/EasyRSA-$EASYRSAV /etc/openvpn/easy-rsa
+chown -R root:root /etc/openvpn/easy-rsa
 rm -rf ~/EasyRSA-$EASYRSAV.tgz
-cd /etc/openvpn/easy-rsa/
+cd /etc/openvpn/easy-rsa
 
 # Create the PKI, set up the CA, the DH params and the server + client certificates
 ./easyrsa init-pki
@@ -133,7 +177,7 @@ cd /etc/openvpn/easy-rsa/
 cp pki/ca.crt pki/private/ca.key pki/dh.pem pki/issued/server.crt pki/private/server.key /etc/openvpn/easy-rsa/pki/crl.pem /etc/openvpn
 
 # CRL is read with each client connection, when OpenVPN is dropped to nobody
-chown nobody:$GROUPNAME /etc/openvpn/crl.pem
+chown $USERNAME:$GROUPNAME /etc/openvpn/crl.pem
 
 # Generate key for tls-auth
 openvpn --genkey --secret /etc/openvpn/ta.key
@@ -161,7 +205,7 @@ echo "push \"dhcp-option DNS $DNS2\"" >> /etc/openvpn/server.conf
 echo "keepalive 10 120
 cipher AES-256-CBC
 
-user nobody
+user $USERNAME 
 group $GROUPNAME
 persist-key
 persist-tun
@@ -190,31 +234,6 @@ if [[ "$OS" != 'openwrt' ]]; then
 		# Set NAT for the VPN subnet
 		firewall-cmd --direct --add-rule ipv4 nat POSTROUTING 0 -s 10.8.0.0/24 -j SNAT --to $IP
 		firewall-cmd --permanent --direct --add-rule ipv4 nat POSTROUTING 0 -s 10.8.0.0/24 -j SNAT --to $IP
-	elif [[ "$OS"='openwrt' ]]; then
-		echo "config zone
-		option input ACCEPT
-		option output ACCEPT
-		option name vpn
-		option forward ACCEPT
-		option network vpn
-
-		config forwarding
-		option dest lan
-		option src vpn
-
-		config forwarding
-		option dest vpn
-		option src lan
-
-		config rule
-		option enabled 1
-		option target ACCEPT
-		option src wan
-		option proto udp
-		option dest_port $Port 
-		option name Allow-openvpn" >> /etc/config/firewall
-
-		service firewall restart
 	else
 		# Needed to use rc.local with some systemd distros
 		if [[ "$OS" = 'debian' && ! -e $RCLOCAL ]]; then
@@ -237,6 +256,35 @@ if [[ "$OS" != 'openwrt' ]]; then
 			sed -i "1 a\iptables -I FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT" $RCLOCAL
 		fi
 	fi
+else
+	echo "set openwrt firewall"
+	uci add firewall zone 
+	uci set firewall.@zone[-1].name='vpn'
+	uci set firewall.@zone[-1].input='ACCEPT'
+	uci set firewall.@zone[-1].output='ACCEPT'
+	uci set firewall.@zone[-1].forward='ACCEPT'
+	uci set firewall.@zone[-1].network='vpn'
+
+	uci add firewall forwarding
+	uci set firewall.@forwarding[-1].dest='vpn'
+	uci set firewall.@forwarding[-1].src='lan'
+
+	uci add firewall forwarding
+	uci set firewall.@forwarding[-1].dest='lan'
+	uci set firewall.@forwarding[-1].src='vpn'
+
+	uci add firewall rule
+	uci set firewall.@rule[-1].enabled='1'
+	uci set firewall.@rule[-1].target='ACCEPT'
+	uci set firewall.@rule[-1].src='wan'
+	uci set firewall.@rule[-1].proto='udp'
+	uci set firewall.@rule[-1].dest_port=$Port
+	uci set firewall.@rule[-1].name='Allow-openvpn'
+
+	sleep 2
+	uci commit firewall
+	sleep 2
+        /etc/init.d/firewall reload
 fi
 # If SELinux is enabled and a custom port or TCP was selected, we need this
 if [[ "$OS" != 'openwrt' ]]; then
@@ -262,7 +310,7 @@ if [[ "$OS" = 'debian' ]]; then
 		service openvpn restart
 	fi
 elif [[ "$OS" = 'openwrt' ]]; then
-	service openvpn restart
+	/etc/init.d/openvpn restart
 else
 	if pgrep systemd-journal; then
 		systemctl restart openvpn@server.service
@@ -289,6 +337,7 @@ persist-key
 persist-tun
 remote-cert-tls server
 cipher AES-256-CBC
+keep-alive 120 60
 comp-lzo
 setenv opt block-outside-dns
 key-direction 1
@@ -317,7 +366,7 @@ chmod g+s /etc/openvpn/easy-rsa/
 #Set Port 443 on 8443for uhttpd openwrt
 if [[ "$OS" = 'openwrt' ]]; then
 	sed -i 's/:443/:8443/' /etc/config/uhttpd
-	service uhttpd restart
+	/etc/init.d/uhttpd restart
 fi
 
 #Generate a self-signed certificate for the web server
@@ -336,43 +385,11 @@ else
 fi
 
 #install the webserver scripts
-if [[ "$OS"='openwrt' ]]; then
-	mkdir /www2
-	mkdir /www2/css
-	mkdir /www2/images
-	wget -O /www2/index.sh $HTTPGIT/index.sh
-	wget -O /www2/download.sh $HTTPGIT/download.sh
-	wget -O /www2/config.sh $HTTPGIT/config.sh
-	wget -O /www2/VARS.sh $HTTPGIT/VARS.sh
-	wget -O /www2/LOAD.sh $HTTPGIT/LOAD.sh
-	wget -O /www2/admin.sh $HTTPGIT/admin.sh
-	wget -O /www2/head_tmp $HTTPGIT/head_tmp
-        wget -O /www2/css/bootstrap.min.css $HTTPGIT/css/bootstrap.min.css
-        wget -O /www2/images/favicon.png $HTTPGIT/images/favicon.png
-	chown -R http:nogroup /www2
-	chown -R http:nogroup /etc/openvpn/ccd
-	chown -R http:nogroup /etc/openvpn/client-common.txt
-	chown -R http:nogroup /etc/openvpn/server.conf
-else
-	rm /var/www/html/*
-	mkdir /var/www/html/css
-	wget -O /var/www/html/index.sh $HTTPGIT/index.sh
-	wget -O /var/www/html/admin.sh $HTTPGIT/admin.sh
-	wget -O /var/www/html/download.sh $HTTPGIT/download.sh
-	wget -O /var/www/html/config.sh $HTTPGIT/config.sh
-	wget -O /var/www/html/VARS.sh $HTTPGIT/VARS.sh
-	wget -O /var/www/html/LOAD.sh $HTTPGIT/LOAD.sh
-	wget -O /var/www/html/head_tmp  $HTTPGIT/head_tmp
-        wget -O /var/www/html/css/bootstrap.min.css $HTTPGIT/css/bootstrap.min.css
-        wget -O /var/www/html/images/favicon.png $HTTPGIT/images/favicon.png
-	chown -R www-data:www-data /var/www/html/
-	chown -R www-data:www-data /etc/openvpn/ccd
-	chown -R www-data:www-data /etc/openvpn/client-common.txt
-	chown -R www-data:www-data /etc/openvpn/server.conf
-fi
+webroot
 
 #set the password file for the WWW logon
 echo "$ADMINUSER:$ADMINPASSWORD" >> /etc/lighttpd/.lighttpdpassword
 
 #restart the web server
-service lighttpd restart
+[[ "$OS"='openwrt' ]] || service lighttpd restart
+[[ "$OS"='openwrt' ]] && /etc/init.d/lighttpd stop && /etc/init.d/lighttpd start

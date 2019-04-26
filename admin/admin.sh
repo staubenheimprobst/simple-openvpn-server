@@ -1,6 +1,7 @@
 #!/bin/bash
 
 #The admin interface for OpenVPN
+. ./VAR.sh
 cat ../head_tmp
 
 echo "<body>
@@ -10,7 +11,7 @@ echo "<body>
 # **********************
 echo "<div class=\"panel panel-success\">
 <div class=\"panel-heading\">Connected Clients</div>"
-cat /etc/openvpn/ipp.txt | sed 's@\(.*\)@<div class="shadow-sm p-3 mb-5 bg-white rounded">\1</div>@'
+cat /etc/openvpn/ipp.txt | sed 's@\(.*\)@<div class="bg-white rounded">\1</div>@'
 echo "</div>"
 # **********************
 
@@ -91,12 +92,11 @@ echo "<div class=\"row mx-md-n15\">
 <div class=\"col-md-4\">
 <div class=\"col px-md-4\">
 <form action='admin.sh' method='get'>
-	<input type='hidden' name='option' value='add'>
 	<div class='input-group mb-3'>
-		<span class="input-group-btn">
+		<span class='input-group-btn'>
 		<input type='text' name='client' class='form-control' placeholder='Add New Client' aria-label='New Client' aria-describedby='button-addon2'>
 		<div class='input-group-append'>
-			<button class='btn btn-outline-secondary' type='button' id='button-addon2' type='submit' value='Add'>Add</button>
+			<button class='btn btn-outline-secondary' id='button-addon2' type='submit' name='option' value='add'>Add</button>
 		</div>
 		</span>
 	</div>

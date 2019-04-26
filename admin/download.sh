@@ -13,7 +13,7 @@ case $opsy in
 		loadflfcr $OVPNPATH/clients/$client.ovpn
 	;;
 	"nix")
-		loadf $OVPNPATH/clients/$client.ovpn
+		loadf $OVPNPATH/clients/$client.conf
 	;;
 	"mac")
 		loadfcr $OVPNPATH/clients/$client.ovpn
