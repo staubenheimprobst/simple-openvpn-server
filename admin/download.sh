@@ -1,22 +1,33 @@
 #!/bin/bash
 #Downloads the config file for the client.
 
-. VAR.sh
-. LOAD.sh
-
-echo "Content-type: text/plain"
-echo "Content-Disposition: attachment; filename=\"$client.ovpn\""
-echo ""
+. ./VAR.sh
 
 case $opsy in
 	"dos")
-		loadflfcr $OVPNPATH/clients/$client.ovpn
+	echo "Content-type: text/plain"
+	echo "Content-Disposition: attachment; filename=\"$client.ovpn\""
+	echo ""
+
+		cat < $OVPNPATH/clients/$client.ovpn
+
 	;;
 	"nix")
-		loadf $OVPNPATH/clients/$client.conf
+	echo "Content-type: text/plain"
+	echo "Content-Disposition: attachment; filename=\"$client.conf\""
+	echo ""
+
+		cat $OVPNPATH/clients/$client.ovpn
 	;;
 	"mac")
-		loadfcr $OVPNPATH/clients/$client.ovpn
+	echo "Content-type: text/plain"
+	echo "Content-Disposition: attachment; filename=\"$client.ovpn\""
+	echo ""
+
+	while read line
+	do
+		printf "$line \r"
+	done < $OVPNPATH/clients/$client.ovpn
 	;;
 	*)
 		exit 2
